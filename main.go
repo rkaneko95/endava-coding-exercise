@@ -9,8 +9,10 @@ var service *api.Service
 
 func init() {
 	service = &api.Service{
-		Config: config.Config.Server,
-		Log:    config.InitLogrus(config.Config.Environment.LogLevel),
+		Config:        config.Config.Server,
+		Log:           config.InitLogrus(config.Config.Environment.LogLevel),
+		TokenDuration: config.Config.Token.TokenDuration,
+		SecretKeyPath: config.Config.Token.SecretKeyPath,
 	}
 }
 
