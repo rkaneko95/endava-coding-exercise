@@ -1,7 +1,20 @@
 package main
 
-import "fmt"
+import (
+	"rkaneko/endava-coding-exercise/api"
+	"rkaneko/endava-coding-exercise/config"
+)
+
+var service *api.Service
+
+func init() {
+	service = &api.Service{
+		Config: config.Config.Server,
+		Log:    config.InitLogrus(config.Config.Environment.LogLevel),
+	}
+}
 
 func main() {
-	fmt.Println("Hello world")
+	service.Log.Infof("Running server %s:%d", service.Config.Host, service.Config.Port)
+	service.Init()
 }
