@@ -45,15 +45,13 @@ func init() {
 	vr := viper.New()
 
 	vr.SetConfigFile(fmt.Sprintf(keys.envPath, env))
-	if err := vr.ReadInConfig(); err != nil {
-		panic("environment file not found")
-	}
+	_ = vr.ReadInConfig()
 
 	vr.SetDefault(keys.logLevel, "error")
 	vr.SetDefault(keys.host, "localhost")
 	vr.SetDefault(keys.port, 8080)
 	vr.SetDefault(keys.duration, "24h")
-	vr.SetDefault(keys.secretKeyPath, "./jwtRS256.key")
+	vr.SetDefault(keys.secretKeyPath, "./mock_RS256.key")
 
 	tokenDuration, err := time.ParseDuration(vr.GetString(keys.duration))
 	if err != nil {
