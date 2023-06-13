@@ -25,3 +25,6 @@ go.work
 
 ### VisualStudioCode template
 .vscode/*
+
+### JWT RS256 key
+jwtRS256.*
