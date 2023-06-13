@@ -4,11 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 type Payload struct {
-	Token string `json:"token,omitempty"`
-	Error string `json:"errors,omitempty"`
+	Token     string     `json:"token,omitempty"`
+	IssuedAt  *time.Time `json:"issuedAt,omitempty"`
+	ExpiredAt *time.Time `json:"expiredAt,omitempty"`
+	Message   string     `json:"message,omitempty"`
+	Error     string     `json:"error,omitempty"`
 }
 
 func (s *Service) Init() {
@@ -30,12 +34,13 @@ func (s *Service) HealthCheckHandler() http.HandlerFunc {
 
 func (s *Service) TokenHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		msg := "failed to generate the token"
 		w.Header().Set("Content-Type", "application/json")
 
 		if r.Method != http.MethodPost {
 			w.WriteHeader(http.StatusMethodNotAllowed)
-			errMsg := "Method not allowed"
-			writeErrorResponse(w, errMsg)
+			errMsg := "method not allowed"
+			writeErrorResponse(w, msg, errMsg)
 			s.Log.Errorf(errMsg)
 			return
 		}
@@ -43,8 +48,8 @@ func (s *Service) TokenHandler() http.HandlerFunc {
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
 			w.WriteHeader(http.StatusUnauthorized)
-			errMsg := "Must contain Authorization"
-			writeErrorResponse(w, errMsg)
+			errMsg := "missing Authorization header"
+			writeErrorResponse(w, msg, errMsg)
 			s.Log.Errorf(errMsg)
 			return
 		}
@@ -52,21 +57,63 @@ func (s *Service) TokenHandler() http.HandlerFunc {
 		token, err := s.CreateToken(authHeader)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			writeErrorResponse(w, err.Error())
-			s.Log.Errorf("Error in CreateToken: %s", err.Error())
+			writeErrorResponse(w, msg, err.Error())
+			s.Log.Errorf("error in CreateToken: %s", err.Error())
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
 		_ = json.NewEncoder(w).Encode(&Payload{
-			Token: token,
+			Token:   token,
+			Message: "token generated",
 		})
-		s.Log.Infof("Token generated")
+		s.Log.Infof("token generated")
 	}
 }
 
-func writeErrorResponse(w http.ResponseWriter, errMsg string) {
+func (s *Service) VerifyTokenHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		msg := "failed to verify the token"
+		w.Header().Set("Content-Type", "application/json")
+
+		if r.Method != http.MethodPost {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			errMsg := "Method not allowed"
+			writeErrorResponse(w, msg, errMsg)
+			s.Log.Errorf(errMsg)
+			return
+		}
+
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" {
+			w.WriteHeader(http.StatusUnauthorized)
+			errMsg := "missing Authorization header"
+			writeErrorResponse(w, msg, errMsg)
+			s.Log.Errorf(errMsg)
+			return
+		}
+
+		issue, expired, err := s.VerifyToken(authHeader)
+		if err != nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			writeErrorResponse(w, msg, err.Error())
+			s.Log.Errorf("error in VerifyToken: %s", err.Error())
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(&Payload{
+			IssuedAt:  issue,
+			ExpiredAt: expired,
+			Message:   "valid token",
+		})
+		s.Log.Infof("valid token")
+	}
+}
+
+func writeErrorResponse(w http.ResponseWriter, msg, errMsg string) {
 	_ = json.NewEncoder(w).Encode(&Payload{
-		Error: errMsg,
+		Message: msg,
+		Error:   errMsg,
 	})
 }
