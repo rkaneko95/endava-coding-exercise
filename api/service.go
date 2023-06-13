@@ -1,6 +1,8 @@
 package api
 
 import (
+	"errors"
+	"fmt"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/sirupsen/logrus"
 	"rkaneko/endava-coding-exercise/config"
@@ -26,7 +28,7 @@ func (s *Service) CreateToken(authHeader string) (string, error) {
 
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 
-	secretKey, err := readSecretKey(s.SecretKeyPath)
+	secretKey, err := getPrivateKey(s.SecretKeyPath)
 	if err != nil {
 		return "", err
 	}
@@ -37,4 +39,32 @@ func (s *Service) CreateToken(authHeader string) (string, error) {
 	}
 
 	return token, nil
+}
+
+func (s *Service) VerifyToken(authHeader string) (*Claims, error) {
+	keyFunc := func(token *jwt.Token) (interface{}, error) {
+		secretKey, err := getPublicKey(fmt.Sprintf("%s.pub", s.SecretKeyPath))
+		if err != nil {
+			return "", err
+		}
+		return secretKey, nil
+	}
+
+	token := extractTokenFromHeader(authHeader)
+
+	jwtToken, err := jwt.ParseWithClaims(token, &Claims{}, keyFunc)
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := jwtToken.Claims.(*Claims)
+	if !ok {
+		return nil, errors.New("token err: token is invalid")
+	}
+
+	if err = claims.Valid(); err != nil {
+		return nil, err
+	}
+
+	return claims, nil
 }
