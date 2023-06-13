@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -46,6 +47,43 @@ func TestCreateToken(t *testing.T) {
 		} else {
 			assert.NoError(t, err)
 			assert.NotEmpty(t, token)
+		}
+	}
+}
+
+func TestVerifyToken(t *testing.T) {
+	cases := []struct {
+		service *Service
+		hasErr  bool
+	}{
+		{
+			service: &Service{
+				TokenDuration: 24 * time.Hour,
+				SecretKeyPath: "../test_resources/mock_RS256.key",
+			},
+			hasErr: false,
+		},
+		{
+			service: &Service{
+				TokenDuration: 24 * time.Hour * -1,
+				SecretKeyPath: "../test_resources/mock_RS256.key",
+			},
+			hasErr: true,
+		},
+	}
+
+	for _, c := range cases {
+		input, _ := c.service.CreateToken("Basic randumstring==")
+
+		issue, expired, err := c.service.VerifyToken(fmt.Sprintf("Bearer %s", input))
+		if c.hasErr {
+			assert.Error(t, err)
+			assert.Nil(t, issue)
+			assert.Nil(t, expired)
+		} else {
+			assert.NoError(t, err)
+			assert.NotEmpty(t, issue)
+			assert.NotEmpty(t, expired)
 		}
 	}
 }

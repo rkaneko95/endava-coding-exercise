@@ -4,13 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 type Payload struct {
-	Token   string  `json:"token,omitempty"`
-	Claims  *Claims `json:"claims,omitempty"`
-	Message string  `json:"message,omitempty"`
-	Error   string  `json:"error,omitempty"`
+	Token     string     `json:"token,omitempty"`
+	IssuedAt  *time.Time `json:"issuedAt,omitempty"`
+	ExpiredAt *time.Time `json:"expiredAt,omitempty"`
+	Message   string     `json:"message,omitempty"`
+	Error     string     `json:"error,omitempty"`
 }
 
 func (s *Service) Init() {
@@ -91,7 +93,7 @@ func (s *Service) VerifyTokenHandler() http.HandlerFunc {
 			return
 		}
 
-		claims, err := s.VerifyToken(authHeader)
+		issue, expired, err := s.VerifyToken(authHeader)
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			writeErrorResponse(w, msg, err.Error())
@@ -101,10 +103,11 @@ func (s *Service) VerifyTokenHandler() http.HandlerFunc {
 
 		w.WriteHeader(http.StatusOK)
 		_ = json.NewEncoder(w).Encode(&Payload{
-			Claims:  claims,
-			Message: "token is valid",
+			IssuedAt:  issue,
+			ExpiredAt: expired,
+			Message:   "valid token",
 		})
-		s.Log.Infof("token is valid")
+		s.Log.Infof("valid token")
 	}
 }
 

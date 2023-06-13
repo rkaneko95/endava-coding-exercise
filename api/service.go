@@ -41,7 +41,7 @@ func (s *Service) CreateToken(authHeader string) (string, error) {
 	return token, nil
 }
 
-func (s *Service) VerifyToken(authHeader string) (*Claims, error) {
+func (s *Service) VerifyToken(authHeader string) (*time.Time, *time.Time, error) {
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
 		secretKey, err := getPublicKey(fmt.Sprintf("%s.pub", s.SecretKeyPath))
 		if err != nil {
@@ -54,17 +54,13 @@ func (s *Service) VerifyToken(authHeader string) (*Claims, error) {
 
 	jwtToken, err := jwt.ParseWithClaims(token, &Claims{}, keyFunc)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	claims, ok := jwtToken.Claims.(*Claims)
 	if !ok {
-		return nil, errors.New("token err: token is invalid")
+		return nil, nil, errors.New("token err: token is invalid")
 	}
 
-	if err = claims.Valid(); err != nil {
-		return nil, err
-	}
-
-	return claims, nil
+	return &claims.IssuedAt, &claims.ExpiredAt, nil
 }
