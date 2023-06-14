@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+const expiredErr = "token err: token has expired"
+
 type Payload struct {
 	ID        uuid.UUID `json:"id"`
 	Base64    string    `json:"base64"`
@@ -36,7 +38,7 @@ func tokenClaims(authHeader string, duration time.Duration) (*Payload, error) {
 
 func (c Payload) Valid() error {
 	if time.Now().After(c.ExpiredAt) {
-		return errors.New("token err: token has expired")
+		return errors.New(expiredErr)
 	}
 	return nil
 }

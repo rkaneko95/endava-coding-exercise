@@ -14,10 +14,14 @@ func (r RedisService) MockedGetBytes(key string) ([]byte, error) {
 	defer file.Close()
 
 	reader := bufio.NewReader(file)
-	privateKey, err := io.ReadAll(reader)
+	pKey, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}
 
-	return privateKey, nil
+	return pKey, nil
+}
+
+func (r RedisService) MockedGetSignatureKeys() ([]string, error) {
+	return []string{"signature_1", "signature_2"}, nil
 }

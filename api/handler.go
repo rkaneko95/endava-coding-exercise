@@ -8,11 +8,15 @@ import (
 )
 
 type Response struct {
-	Token     string     `json:"token,omitempty"`
-	IssuedAt  *time.Time `json:"issuedAt,omitempty"`
-	ExpiredAt *time.Time `json:"expiredAt,omitempty"`
-	Message   string     `json:"message,omitempty"`
-	Error     string     `json:"error,omitempty"`
+	Token   string `json:"token,omitempty"`
+	Message string `json:"message,omitempty"`
+	Error   string `json:"error,omitempty"`
+}
+
+type ResponseValidation struct {
+	IssuedAt  *time.Time `json:"issuedAt"`
+	ExpiredAt *time.Time `json:"expiredAt"`
+	Active    bool       `json:"active"`
 }
 
 func (s *Service) Init() {
@@ -32,9 +36,11 @@ func (s *Service) HealthCheckHandler() http.HandlerFunc {
 	}
 }
 
-func (s *Service) GenerateDataHandler() http.HandlerFunc {
+func (s *Service) GenerateKeysHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := s.GenerateKeys()
+		w.Header().Set("Content-Type", "application/json")
+
+		id, err := s.GenerateKeys()
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			writeErrorResponse(w, "was not able to generate data", err.Error())
@@ -43,8 +49,11 @@ func (s *Service) GenerateDataHandler() http.HandlerFunc {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("data generated"))
-		s.Log.Debugf("data generated")
+		_ = json.NewEncoder(w).Encode(&struct{ UUID, Message string }{
+			UUID:    id,
+			Message: "Keys generated",
+		})
+		s.Log.Debugf("Keys generated")
 	}
 }
 
@@ -111,6 +120,17 @@ func (s *Service) VerifyTokenHandler() http.HandlerFunc {
 
 		issue, expired, err := s.VerifyToken(authHeader)
 		if err != nil {
+			if err.Error() == expiredErr {
+				w.WriteHeader(http.StatusOK)
+				_ = json.NewEncoder(w).Encode(&ResponseValidation{
+					IssuedAt:  issue,
+					ExpiredAt: expired,
+					Active:    false,
+				})
+				s.Log.Warnf("token has expired")
+				return
+			}
+
 			w.WriteHeader(http.StatusUnauthorized)
 			writeErrorResponse(w, msg, err.Error())
 			s.Log.Errorf("error in VerifyToken: %s", err.Error())
@@ -118,10 +138,10 @@ func (s *Service) VerifyTokenHandler() http.HandlerFunc {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(w).Encode(&Response{
+		_ = json.NewEncoder(w).Encode(&ResponseValidation{
 			IssuedAt:  issue,
 			ExpiredAt: expired,
-			Message:   "valid token",
+			Active:    true,
 		})
 		s.Log.Infof("valid token")
 	}
