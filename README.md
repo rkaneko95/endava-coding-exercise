@@ -19,6 +19,7 @@ _(version v1.0.0)_
 * [Redis](#redis)
   * [Private Key](#private-key)
   * [Public Key](#public-key)
+* [Quick Demo](#quick-demo)
 
 ## Exercise
 ### Tasks
