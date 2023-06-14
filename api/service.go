@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/sirupsen/logrus"
+	"github.com/square/go-jose/v3"
 	"rkaneko/endava-coding-exercise/config"
 	"rkaneko/endava-coding-exercise/db"
 	"time"
@@ -14,7 +15,7 @@ import (
 type Auth interface {
 	CreateToken(authHeader string) (string, error)
 	VerifyToken(authHeader string) (*time.Time, *time.Time, error)
-	ListSigningKeys() ([]Signature, error)
+	ListSigningKeys() ([]jose.JSONWebKey, error)
 }
 
 type Service struct {
@@ -33,7 +34,9 @@ func (s *Service) CreateToken(authHeader string) (string, error) {
 
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 
-	secretKey, err := getPrivateKey(s.SecretKeyPath)
+	secretKey, err := getPrivateKey(
+		fmt.Sprintf("secret_%s", "18188a8d-7784-462b-bb91-5b3a540e588c"),
+		s.RedisService)
 	if err != nil {
 		return "", err
 	}
@@ -48,7 +51,9 @@ func (s *Service) CreateToken(authHeader string) (string, error) {
 
 func (s *Service) VerifyToken(authHeader string) (*time.Time, *time.Time, error) {
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
-		secretKey, err := getPublicKey(fmt.Sprintf("%s.pub", s.SecretKeyPath))
+		secretKey, err := getPublicKey(
+			fmt.Sprintf("signature_%s", "18188a8d-7784-462b-bb91-5b3a540e588c"),
+			s.RedisService)
 		if err != nil {
 			return "", err
 		}
@@ -57,12 +62,12 @@ func (s *Service) VerifyToken(authHeader string) (*time.Time, *time.Time, error)
 
 	token := extractTokenFromHeader(authHeader)
 
-	jwtToken, err := jwt.ParseWithClaims(token, &Claims{}, keyFunc)
+	jwtToken, err := jwt.ParseWithClaims(token, &Payload{}, keyFunc)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	claims, ok := jwtToken.Claims.(*Claims)
+	claims, ok := jwtToken.Claims.(*Payload)
 	if !ok {
 		return nil, nil, errors.New("token err: token is invalid")
 	}
@@ -70,21 +75,21 @@ func (s *Service) VerifyToken(authHeader string) (*time.Time, *time.Time, error)
 	return &claims.IssuedAt, &claims.ExpiredAt, nil
 }
 
-func (s *Service) ListSigningKeys() ([]Signature, error) {
+func (s *Service) ListSigningKeys() ([]jose.JSONWebKey, error) {
 	keys, err := s.RedisService.GetSignatureKeys()
 	if err != nil {
 		return nil, err
 	}
 
-	signatures := make([]Signature, 0, len(keys))
+	signatures := make([]jose.JSONWebKey, 0, len(keys))
 	for _, key := range keys {
-		data, err := s.RedisService.GetString(key)
+		data, err := s.RedisService.GetBytes(key)
 		if err != nil {
 			return nil, err
 		}
 
-		var signature Signature
-		err = json.Unmarshal([]byte(data), &signature)
+		var signature jose.JSONWebKey
+		err = json.Unmarshal(data, &signature)
 		if err != nil {
 			return nil, err
 		}

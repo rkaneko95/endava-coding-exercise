@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type Payload struct {
+type Response struct {
 	Token     string     `json:"token,omitempty"`
 	IssuedAt  *time.Time `json:"issuedAt,omitempty"`
 	ExpiredAt *time.Time `json:"expiredAt,omitempty"`
@@ -26,9 +26,25 @@ func (s *Service) Init() {
 
 func (s *Service) HealthCheckHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte("Hello, World!"))
 		w.WriteHeader(http.StatusOK)
-		s.Log.Debugf("Servier is working")
+		_, _ = w.Write([]byte("Hello, World!"))
+		s.Log.Debugf("servier is working")
+	}
+}
+
+func (s *Service) GenerateDataHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := s.GenerateData()
+		if err != nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			writeErrorResponse(w, "was not able to generate data", err.Error())
+			s.Log.Errorf("error in GenerateData: %s", err.Error())
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("data generated"))
+		s.Log.Debugf("data generated")
 	}
 }
 
@@ -63,7 +79,7 @@ func (s *Service) TokenHandler() http.HandlerFunc {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(w).Encode(&Payload{
+		_ = json.NewEncoder(w).Encode(&Response{
 			Token:   token,
 			Message: "token generated",
 		})
@@ -102,7 +118,7 @@ func (s *Service) VerifyTokenHandler() http.HandlerFunc {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(w).Encode(&Payload{
+		_ = json.NewEncoder(w).Encode(&Response{
 			IssuedAt:  issue,
 			ExpiredAt: expired,
 			Message:   "valid token",
@@ -139,7 +155,7 @@ func (s *Service) ListSigningKeysHandler() http.HandlerFunc {
 }
 
 func writeErrorResponse(w http.ResponseWriter, msg, errMsg string) {
-	_ = json.NewEncoder(w).Encode(&Payload{
+	_ = json.NewEncoder(w).Encode(&Response{
 		Message: msg,
 		Error:   errMsg,
 	})

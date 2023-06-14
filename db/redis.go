@@ -23,13 +23,22 @@ func RunRedis(password, host string, port int) (*redis.Client, error) {
 	return client, nil
 }
 
-func (r RedisService) GetString(key string) (string, error) {
-	value, err := r.Client.Get(r.Client.Context(), key).Result()
+func (r RedisService) GetBytes(key string) ([]byte, error) {
+	value, err := r.Client.Get(r.Client.Context(), key).Bytes()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	return value, nil
+}
+
+func (r RedisService) SetBytes(key string, content []byte) error {
+	err := r.Client.Set(r.Client.Context(), key, content, 0).Err()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r RedisService) GetSignatureKeys() ([]string, error) {

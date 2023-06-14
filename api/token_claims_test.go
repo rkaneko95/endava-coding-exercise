@@ -23,7 +23,7 @@ func TestTokenClaims(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotEmpty(t, c)
-	assert.IsType(t, &Claims{}, c)
+	assert.IsType(t, &Payload{}, c)
 	assert.Equal(t, base64Str, c.Base64)
 	assert.WithinDuration(t, expectedExpiredAt, c.ExpiredAt, time.Second)
 	assert.WithinDuration(t, expectedIssuedAt, c.IssuedAt, time.Second)
