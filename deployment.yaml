@@ -15,6 +15,7 @@ spec:
       containers:
         - name: endava-coding-exercise
           image: endava-coding-exercise:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 8080
         - name: redis
