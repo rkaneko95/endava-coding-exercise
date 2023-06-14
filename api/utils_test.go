@@ -78,11 +78,11 @@ func TestGetPrivateKey(t *testing.T) {
 		hasErr bool
 	}{
 		{
-			input:  "../test_resources/mock_RS256.key",
+			input:  "../resources/mock_RS256.key",
 			hasErr: false,
 		},
 		{
-			input:  "../test_resources/no_mock.key",
+			input:  "../resources/no_mock.key",
 			hasErr: true,
 		},
 		{
@@ -110,11 +110,11 @@ func TestGetPublicKey(t *testing.T) {
 		hasErr bool
 	}{
 		{
-			input:  "../test_resources/mock_RS256.key",
+			input:  "../resources/mock_RS256.key",
 			hasErr: false,
 		},
 		{
-			input:  "../test_resources/no_mock.key",
+			input:  "../resources/no_mock.key",
 			hasErr: true,
 		},
 		{

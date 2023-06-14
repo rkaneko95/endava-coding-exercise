@@ -34,11 +34,11 @@ func (s *Service) HealthCheckHandler() http.HandlerFunc {
 
 func (s *Service) GenerateDataHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := s.GenerateMockKeys()
+		err := s.GenerateKeys()
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			writeErrorResponse(w, "was not able to generate data", err.Error())
-			s.Log.Errorf("error in GenerateMockKeys: %s", err.Error())
+			s.Log.Errorf("error in GenerateKeys: %s", err.Error())
 			return
 		}
 
