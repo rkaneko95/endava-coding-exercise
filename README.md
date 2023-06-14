@@ -15,18 +15,22 @@ _(version v1.0.0)_
 
 ## Setup & Configuration
 ### Setup
-1. Download go greater than v1.20
-2. Download all dependencies and run 
+1. Download go version greater than 1.20
+2. Set the go env 
+```bash
+go env -w GOARCH=amd64
+```
+3. Download all dependencies and run 
 ```bash 
 go mod tidy
 ```
-3. Verify all tests are passed with
+4. Verify all tests are passed with
 ```bash 
 make test
 ```
-4. Run the Redis
+5. Run the Redis in the docker
 ```bash
-redis-server
+make run_redis
 ```
 
 ### Configuration

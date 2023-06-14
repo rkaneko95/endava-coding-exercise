@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: endava-coding-exercise-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: endava-coding-exercise
+  template:
+    metadata:
+      labels:
+        app: endava-coding-exercise
+    spec:
+      containers:
+        - name: endava-coding-exercise
+          image: endava-coding-exercise:tag
+          ports:
+            - containerPort: 8080
