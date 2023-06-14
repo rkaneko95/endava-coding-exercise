@@ -111,6 +111,33 @@ func (s *Service) VerifyTokenHandler() http.HandlerFunc {
 	}
 }
 
+func (s *Service) ListSigningKeysHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		msg := "failed to get signing keys"
+		w.Header().Set("Content-Type", "application/json")
+
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			errMsg := "Method not allowed"
+			writeErrorResponse(w, msg, errMsg)
+			s.Log.Errorf(errMsg)
+			return
+		}
+
+		keys, err := s.ListSigningKeys()
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			writeErrorResponse(w, msg, err.Error())
+			s.Log.Errorf("error in ListSigningKeys: %s", err.Error())
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(keys)
+		s.Log.Infof("there are %d signing keys", len(keys))
+	}
+}
+
 func writeErrorResponse(w http.ResponseWriter, msg, errMsg string) {
 	_ = json.NewEncoder(w).Encode(&Payload{
 		Message: msg,

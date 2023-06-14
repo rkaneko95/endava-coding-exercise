@@ -1,16 +1,20 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/sirupsen/logrus"
 	"rkaneko/endava-coding-exercise/config"
+	"rkaneko/endava-coding-exercise/db"
 	"time"
 )
 
 type Auth interface {
 	CreateToken(authHeader string) (string, error)
+	VerifyToken(authHeader string) (*time.Time, *time.Time, error)
+	ListSigningKeys() ([]Signature, error)
 }
 
 type Service struct {
@@ -18,6 +22,7 @@ type Service struct {
 	Log           *logrus.Logger
 	TokenDuration time.Duration
 	SecretKeyPath string
+	RedisService  *db.RedisService
 }
 
 func (s *Service) CreateToken(authHeader string) (string, error) {
@@ -63,4 +68,29 @@ func (s *Service) VerifyToken(authHeader string) (*time.Time, *time.Time, error)
 	}
 
 	return &claims.IssuedAt, &claims.ExpiredAt, nil
+}
+
+func (s *Service) ListSigningKeys() ([]Signature, error) {
+	keys, err := s.RedisService.GetSignatureKeys()
+	if err != nil {
+		return nil, err
+	}
+
+	signatures := make([]Signature, 0, len(keys))
+	for _, key := range keys {
+		data, err := s.RedisService.GetString(key)
+		if err != nil {
+			return nil, err
+		}
+
+		var signature Signature
+		err = json.Unmarshal([]byte(data), &signature)
+		if err != nil {
+			return nil, err
+		}
+
+		signatures = append(signatures, signature)
+	}
+
+	return signatures, nil
 }
