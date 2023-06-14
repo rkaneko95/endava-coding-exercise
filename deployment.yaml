@@ -14,6 +14,10 @@ spec:
     spec:
       containers:
         - name: endava-coding-exercise
-          image: endava-coding-exercise:tag
+          image: endava-coding-exercise:latest
           ports:
             - containerPort: 8080
+        - name: redis
+          image: redis
+          ports:
+            - containerPort: 6379

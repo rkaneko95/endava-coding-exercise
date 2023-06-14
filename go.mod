@@ -7,7 +7,6 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.22.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang-jwt/jwt/v4 v4.5.0
-	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.1.2
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/viper v1.16.0

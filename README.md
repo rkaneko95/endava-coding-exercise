@@ -13,29 +13,15 @@ _(version v1.0.0)_
 * Avoid a single commit with the whole solution, we want to see how the solution was developed incrementally.
 * Provide instructions to execute it
 
-## Setup & Configuration
-### Setup
-1. Download go version greater than 1.20
-2. Set the go env 
-```bash
-go env -w GOARCH=amd64
-```
-3. Download all dependencies and run 
-```bash 
-go mod tidy
-```
-4. Verify all tests are passed with
-```bash 
-make test
-```
-5. Run the Redis in the docker
-```bash
-make run_redis
-```
+## Get Started
+### Tools
+* Docker
+* Kubernetes
+* IDE (Golang, VSCode, etc)
 
 ### Configuration
-1. Environment variables 
-* Add your environment name: example `ENV=local`
+1. Environment variables
+* Add your environment name in Dockerfile: example `ENV=local`
 * Setup all environment variables in [environment](environment) package naming `{env_name}.env` Example:
 ```
 LOG_LEVEL=debug
@@ -49,7 +35,30 @@ REDIS_PASSWORD=
 ```
 _Note: by default the application runs with local environment variables._
 
-2. Generate local RS256 keys with the endpoint: `/generate-data` (more details see the next section).
+2. Verify all tests are passed with
+```bash 
+make test
+```
+
+### Deployment
+1. Pull Redis
+```bash
+docker pull redis
+```
+2. Deploy the application
+```bash
+docker build -t endava-coding-exercise .
+
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+```
+3. Generate port forwarding
+```bash
+kubectl get pods
+kubectl port-forward {pod_name} 8080:8080
+```
+4. Verify the server calling `http://localhost:8080/health-check`
+5. Generate local RS256 keys with the endpoint: `/generate-data` (more details see the next section).
 
 ## User Guide
 ## Health Check
@@ -76,7 +85,7 @@ Response: `data generated`
 
 Redis result:
 
-![img.png](readme_images/img_2.png)
+![img.png](images/img_2.png)
 
 ### Create Token
 #### Endpoint: POST `/token`
@@ -89,7 +98,7 @@ Request:
 http://localhost:8080/token
 Basic Auth: Username: user, Password: password
 ```
-![img.png](readme_images/img.png)
+![img.png](images/img.png)
 
 Response:
 ```json
@@ -110,7 +119,7 @@ Request:
 http://localhost:8080/verify-token
 Bearer Token: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjM5YTUxZDczLWJlMDAtNDIzMy1hODlhLTI3YjlmMDhhMDI1NSIsImJhc2U2NCI6ImRYTmxjanB3WVhOemQyOXlaQT09IiwiaXNzdWVkQXQiOiIyMDIzLTA2LTEzVDE3OjAxOjQ5LjIzNjc1NC0wNTowMCIsImV4cGlyZWRBdCI6IjIwMjMtMDYtMTRUMTc6MDE6NDkuMjM2NzU0LTA1OjAwIn0.JGUKZSlIF7sd65XS0V2z3_UwxH6jdinTHr1TdyCmz1H0dce1twVvYQcw5K4S8zbiFMfBIcx9cpkMcmxHzyVFKMcLk4Pfnd5NH3H_H5RVDG2xNDsMYwDfmUKvTzqDmp88nrNqHvk0NDEFuXIoOmmw_J2aMCXG7pkZD--jCNQA5nQG-WnVvXXL8D_vqzdQrHZogpxqHCp65vgV3cEsBGpxU1uc13o8Foz8NSzt0WQYk7teiK-hsjSoZKPEqCvye1CIhCP-dalB71kFy-FrwvOEpxB4tRl7IYuI_i_Qjt0fyC5hqZF_aD2JmgTpY4Fz9bKf88WUusUd4YEWRq4lHDlvplJDzyO7OcEwdOzbetYB5D8RVZZw2JKr1ET1OwsHEEEP0vglzDNsrjhhNIDz5Tr4WBiNSDQMA7lnmgBLb5P8k15pfdg3wGy47K1tG2RcOfLUdzJxaVnbSRf6Z3gjYjwgiDYAFmbyqn5ZVC4XVFAEiaAXf-Od4zmrg1pByoPefv0s_DDy2Y39WxWbAjmMyWUapi6tK72NJ86xp-pXQ3XeeMEX0X6MozUiiUMLGwpBPROzhb219KD4JjlgbEolaBbc853o_xCpH2KgLyq64nDF-sVrWkJFUETDu_4hILo3pWDJDgNwJremxr8QZYfZhayVHyXeqq7q1fDBgLs0r66LZ5Y
 ```
-![img_1.png](readme_images/img_1.png)
+![img_1.png](images/img_1.png)
 
 Response:
 ```json

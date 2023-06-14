@@ -22,7 +22,7 @@ func TestCreateToken(t *testing.T) {
 		{
 			service: &Service{
 				TokenDuration: 24 * time.Hour,
-				KeyUUID:       "../test_resources/mock_RS256.key",
+				KeyUUID:       "../resources/mock_RS256.key",
 			},
 			input:  "Basic randumstring==",
 			hasErr: false,
@@ -38,7 +38,7 @@ func TestCreateToken(t *testing.T) {
 		{
 			service: &Service{
 				TokenDuration: 24 * time.Hour,
-				KeyUUID:       "../test_resources/mock_RS256.key",
+				KeyUUID:       "../resources/mock_RS256.key",
 			},
 			input:  "randumstring==",
 			hasErr: true,
@@ -65,14 +65,14 @@ func TestVerifyToken(t *testing.T) {
 		{
 			service: &Service{
 				TokenDuration: 24 * time.Hour,
-				KeyUUID:       "../test_resources/mock_RS256.key",
+				KeyUUID:       "../resources/mock_RS256.key",
 			},
 			hasErr: false,
 		},
 		{
 			service: &Service{
 				TokenDuration: 24 * time.Hour * -1,
-				KeyUUID:       "../test_resources/mock_RS256.key",
+				KeyUUID:       "../resources/mock_RS256.key",
 			},
 			hasErr: true,
 		},

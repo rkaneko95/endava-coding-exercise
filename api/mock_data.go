@@ -10,7 +10,7 @@ import (
 	"github.com/square/go-jose/v3"
 )
 
-func (s *Service) GenerateMockKeys() error {
+func (s *Service) GenerateKeys() error {
 	id, err := s.generateUUID()
 	if err != nil {
 		return err
