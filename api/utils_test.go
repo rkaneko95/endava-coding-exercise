@@ -1,9 +1,17 @@
 package api
 
 import (
+	"bou.ke/monkey"
 	"github.com/stretchr/testify/assert"
+	"rkaneko/endava-coding-exercise/db"
 	"testing"
 )
+
+var mockRedisService = &db.RedisService{}
+
+func init() {
+	monkey.Patch(mockRedisService.GetBytes, mockRedisService.MockedGetBytes)
+}
 
 func TestExtractAuth(t *testing.T) {
 	cases := []struct {
@@ -84,7 +92,7 @@ func TestGetPrivateKey(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		p, err := getPrivateKey(c.input)
+		p, err := getPrivateKey(c.input, mockRedisService)
 
 		if c.hasErr {
 			assert.Error(t, err)
@@ -102,11 +110,11 @@ func TestGetPublicKey(t *testing.T) {
 		hasErr bool
 	}{
 		{
-			input:  "../test_resources/mock_RS256.key.pub",
+			input:  "../test_resources/mock_RS256.key",
 			hasErr: false,
 		},
 		{
-			input:  "../test_resources/no_mock.key.pub",
+			input:  "../test_resources/no_mock.key",
 			hasErr: true,
 		},
 		{
@@ -116,7 +124,7 @@ func TestGetPublicKey(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		p, err := getPublicKey(c.input)
+		p, err := getPublicKey(c.input, mockRedisService)
 
 		if c.hasErr {
 			assert.Error(t, err)

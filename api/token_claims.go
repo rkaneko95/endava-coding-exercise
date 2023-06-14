@@ -6,14 +6,14 @@ import (
 	"time"
 )
 
-type Claims struct {
+type Payload struct {
 	ID        uuid.UUID `json:"id"`
 	Base64    string    `json:"base64"`
 	IssuedAt  time.Time `json:"issuedAt"`
 	ExpiredAt time.Time `json:"expiredAt"`
 }
 
-func tokenClaims(authHeader string, duration time.Duration) (*Claims, error) {
+func tokenClaims(authHeader string, duration time.Duration) (*Payload, error) {
 	tokenID, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
@@ -24,17 +24,17 @@ func tokenClaims(authHeader string, duration time.Duration) (*Claims, error) {
 		return nil, err
 	}
 
-	claims := &Claims{
+	payload := &Payload{
 		ID:        tokenID,
 		Base64:    credBase64,
 		IssuedAt:  time.Now(),
 		ExpiredAt: time.Now().Add(duration),
 	}
 
-	return claims, nil
+	return payload, nil
 }
 
-func (c Claims) Valid() error {
+func (c Payload) Valid() error {
 	if time.Now().After(c.ExpiredAt) {
 		return errors.New("token err: token has expired")
 	}

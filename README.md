@@ -15,13 +15,18 @@ _(version v1.0.0)_
 
 ## Setup & Configuration
 ### Setup
-1. Download all dependencies and run 
+1. Download go greater than v1.20
+2. Download all dependencies and run 
 ```bash 
 go mod tidy
 ```
-2. Verify all tests are passed with
+3. Verify all tests are passed with
 ```bash 
 make test
+```
+4. Run the Redis
+```bash
+redis-server
 ```
 
 ### Configuration
@@ -33,20 +38,47 @@ LOG_LEVEL=debug
 HOST=localhost
 PORT=8080
 DURATION=24h
-SECRET_KEY_PATH=./jwtRS256.key
+KEY_UUID=18188a8d-7784-462b-bb91-5b3a540e588c
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
 ```
 _Note: by default the application runs with local environment variables._
 
-2. Generate your RS256 keys with the commands: 
-```bash
-ssh-keygen -t rsa -b 4096 -m PEM -f jwtRS256.key
-openssl rsa -in jwtRS256.key -pubout -outform PEM -out jwtRS256.key.pub
-```
+2. Generate local RS256 keys with the endpoint: `/generate-data` (more details see the next section).
 
 ## User Guide
+## Health Check
+#### Endpoint: POST `/health-check`
+#### Description:
+This endpoint verifies if the server is up.
+
+## Generate local keys
+#### Endpoint: POST `/generate-data`
+#### Description:
+When the endpoint is triggered, it generates two data in Redis:
+* `signature_{uuid}`: this is signing key in the RFC7517 format
+* `secret_{uuid}`: this is the private key in bytes
+
+The UUID wants use must be same with `KEY_UUID` of env variable.
+
+#### Example from Postman
+Request:
+```
+http://localhost:8080/generate-data
+```
+
+Response: `data generated`
+
+Redis result:
+
+![img.png](readme_images/img_2.png)
+
 ### Create Token
 #### Endpoint: POST `/token`
 #### Header: Basic Auth
+#### Description:
+This endpoint generate token from user and password getting from Authorization header.
 #### Example from Postman
 Request:
 ```
@@ -66,6 +98,8 @@ Response:
 ### Verify Token
 #### Endpoint: POST `/verify-token`
 #### Header: Bearer Token
+#### Description:
+This endpoint validate the token from Authorization header.
 #### Example from Postman
 Request:
 ```

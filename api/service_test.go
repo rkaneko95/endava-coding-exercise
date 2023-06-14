@@ -1,11 +1,17 @@
 package api
 
 import (
+	"bou.ke/monkey"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
+
+func init() {
+	monkey.Patch(getPrivateKey, MockedGetPrivateKey)
+	monkey.Patch(getPublicKey, MockedGetPublicKey)
+}
 
 func TestCreateToken(t *testing.T) {
 	cases := []struct {
@@ -16,7 +22,7 @@ func TestCreateToken(t *testing.T) {
 		{
 			service: &Service{
 				TokenDuration: 24 * time.Hour,
-				SecretKeyPath: "../test_resources/mock_RS256.key",
+				KeyUUID:       "../test_resources/mock_RS256.key",
 			},
 			input:  "Basic randumstring==",
 			hasErr: false,
@@ -24,7 +30,7 @@ func TestCreateToken(t *testing.T) {
 		{
 			service: &Service{
 				TokenDuration: 24 * time.Hour,
-				SecretKeyPath: "",
+				KeyUUID:       "",
 			},
 			input:  "Basic randumstring==",
 			hasErr: true,
@@ -32,7 +38,7 @@ func TestCreateToken(t *testing.T) {
 		{
 			service: &Service{
 				TokenDuration: 24 * time.Hour,
-				SecretKeyPath: "../test_resources/mock_RS256.key",
+				KeyUUID:       "../test_resources/mock_RS256.key",
 			},
 			input:  "randumstring==",
 			hasErr: true,
@@ -59,14 +65,14 @@ func TestVerifyToken(t *testing.T) {
 		{
 			service: &Service{
 				TokenDuration: 24 * time.Hour,
-				SecretKeyPath: "../test_resources/mock_RS256.key",
+				KeyUUID:       "../test_resources/mock_RS256.key",
 			},
 			hasErr: false,
 		},
 		{
 			service: &Service{
 				TokenDuration: 24 * time.Hour * -1,
-				SecretKeyPath: "../test_resources/mock_RS256.key",
+				KeyUUID:       "../test_resources/mock_RS256.key",
 			},
 			hasErr: true,
 		},

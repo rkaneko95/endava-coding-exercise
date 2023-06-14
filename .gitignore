@@ -28,3 +28,5 @@ go.work
 
 ### JWT RS256 key
 jwtRS256.*
+
+dump.rdb

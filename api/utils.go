@@ -1,12 +1,13 @@
 package api
 
 import (
-	"bufio"
 	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"errors"
 	"github.com/golang-jwt/jwt/v4"
-	"io"
-	"os"
+	"github.com/square/go-jose/v3"
+	"rkaneko/endava-coding-exercise/db"
 	"strings"
 )
 
@@ -27,20 +28,18 @@ func extractTokenFromHeader(header string) string {
 	return parts[1]
 }
 
-func getPrivateKey(path string) (*rsa.PrivateKey, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	reader := bufio.NewReader(file)
-	keyData, err := io.ReadAll(reader)
+func getPrivateKey(key string, rds *db.RedisService) (*rsa.PrivateKey, error) {
+	data, err := rds.GetBytes(key)
 	if err != nil {
 		return nil, err
 	}
 
-	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(keyData)
+	privateKeyPEM := pem.EncodeToMemory(&pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: data,
+	})
+
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privateKeyPEM)
 	if err != nil {
 		return nil, err
 	}
@@ -48,20 +47,29 @@ func getPrivateKey(path string) (*rsa.PrivateKey, error) {
 	return privateKey, nil
 }
 
-func getPublicKey(path string) (*rsa.PublicKey, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	reader := bufio.NewReader(file)
-	keyData, err := io.ReadAll(reader)
+func getPublicKey(key string, rds *db.RedisService) (*rsa.PublicKey, error) {
+	data, err := rds.GetBytes(key)
 	if err != nil {
 		return nil, err
 	}
 
-	publicKey, err := jwt.ParseRSAPublicKeyFromPEM(keyData)
+	var jwk jose.JSONWebKey
+	err = jwk.UnmarshalJSON(data)
+	if err != nil {
+		return nil, err
+	}
+
+	pubKeyBytes, err := x509.MarshalPKIXPublicKey(jwk.Key)
+	if err != nil {
+		return nil, err
+	}
+
+	publicKeyPEM := pem.EncodeToMemory(&pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: pubKeyBytes,
+	})
+
+	publicKey, err := jwt.ParseRSAPublicKeyFromPEM(publicKeyPEM)
 	if err != nil {
 		return nil, err
 	}
