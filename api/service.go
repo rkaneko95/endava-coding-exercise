@@ -50,6 +50,9 @@ func (s *Service) CreateToken(authHeader string) (string, error) {
 }
 
 func (s *Service) VerifyToken(authHeader string) (*time.Time, *time.Time, error) {
+	var jwtToken *jwt.Token
+	var err error
+
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
 		secretKey, err := getPublicKey(
 			fmt.Sprintf("signature_%s", s.KeyUUID),
@@ -62,8 +65,8 @@ func (s *Service) VerifyToken(authHeader string) (*time.Time, *time.Time, error)
 
 	token := extractTokenFromHeader(authHeader)
 
-	jwtToken, err := jwt.ParseWithClaims(token, &Payload{}, keyFunc)
-	if err != nil {
+	jwtToken, err = jwt.ParseWithClaims(token, &Payload{}, keyFunc)
+	if err != nil && err.Error() != expiredErr {
 		return nil, nil, err
 	}
 
@@ -72,7 +75,7 @@ func (s *Service) VerifyToken(authHeader string) (*time.Time, *time.Time, error)
 		return nil, nil, errors.New("token err: token is invalid")
 	}
 
-	return &claims.IssuedAt, &claims.ExpiredAt, nil
+	return &claims.IssuedAt, &claims.ExpiredAt, err
 }
 
 func (s *Service) ListSigningKeys() ([]jose.JSONWebKey, error) {

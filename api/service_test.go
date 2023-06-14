@@ -76,6 +76,13 @@ func TestVerifyToken(t *testing.T) {
 			},
 			hasErr: true,
 		},
+		{
+			service: &Service{
+				TokenDuration: 24 * time.Hour,
+				KeyUUID:       "",
+			},
+			hasErr: true,
+		},
 	}
 
 	for _, c := range cases {
@@ -83,9 +90,16 @@ func TestVerifyToken(t *testing.T) {
 
 		issue, expired, err := c.service.VerifyToken(fmt.Sprintf("Bearer %s", input))
 		if c.hasErr {
-			assert.Error(t, err)
-			assert.Nil(t, issue)
-			assert.Nil(t, expired)
+			switch err.Error() {
+			case expiredErr:
+				assert.Error(t, err)
+				assert.NotEmpty(t, issue)
+				assert.NotEmpty(t, expired)
+			default:
+				assert.Error(t, err)
+				assert.Nil(t, issue)
+				assert.Nil(t, expired)
+			}
 		} else {
 			assert.NoError(t, err)
 			assert.NotEmpty(t, issue)

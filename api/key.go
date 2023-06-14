@@ -10,26 +10,26 @@ import (
 	"github.com/square/go-jose/v3"
 )
 
-func (s *Service) GenerateKeys() error {
+func (s *Service) GenerateKeys() (string, error) {
 	id, err := s.generateUUID()
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if err = s.setPrivateKey(privateKey, id); err != nil {
-		return err
+		return "", err
 	}
 
 	if err = s.setPublicKey(privateKey, id); err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return id, nil
 }
 
 func (s *Service) generateUUID() (string, error) {
