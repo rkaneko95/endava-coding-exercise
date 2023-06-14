@@ -1,5 +1,5 @@
 # Coding Exercise: Simple OAuth2 Server
-_(version v1.0.0)_
+_(version v1.3.0)_
 
 ## Content
 * [Exercise](#exercise)
@@ -229,7 +229,7 @@ endava-coding-exercise/
 ## Redis
 The Redis saves private and public keys.
 
-## Private Key
+### Private Key
 It storages as bytes with name `secret_{uuid}`
 
 Example:
@@ -248,7 +248,7 @@ Then, it parses RSA to get the private key
 privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privateKeyPEM)
 ```
 
-## Public Key
+### Public Key
 It storages as JSON in format string with name `signature_{uuid}`
 
 
