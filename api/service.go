@@ -22,7 +22,7 @@ type Service struct {
 	Config        config.ServerConfig
 	Log           *logrus.Logger
 	TokenDuration time.Duration
-	SecretKeyPath string
+	KeyUUID       string
 	RedisService  *db.RedisService
 }
 
@@ -35,7 +35,7 @@ func (s *Service) CreateToken(authHeader string) (string, error) {
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 
 	secretKey, err := getPrivateKey(
-		fmt.Sprintf("secret_%s", "18188a8d-7784-462b-bb91-5b3a540e588c"),
+		fmt.Sprintf("secret_%s", s.KeyUUID),
 		s.RedisService)
 	if err != nil {
 		return "", err
@@ -52,7 +52,7 @@ func (s *Service) CreateToken(authHeader string) (string, error) {
 func (s *Service) VerifyToken(authHeader string) (*time.Time, *time.Time, error) {
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
 		secretKey, err := getPublicKey(
-			fmt.Sprintf("signature_%s", "18188a8d-7784-462b-bb91-5b3a540e588c"),
+			fmt.Sprintf("signature_%s", s.KeyUUID),
 			s.RedisService)
 		if err != nil {
 			return "", err

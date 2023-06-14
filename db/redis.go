@@ -9,6 +9,12 @@ type RedisService struct {
 	Client *redis.Client
 }
 
+type RedisClient interface {
+	GetBytes(key string) ([]byte, error)
+	SetBytes(key string, content []byte) error
+	GetSignatureKeys() ([]string, error)
+}
+
 func RunRedis(password, host string, port int) (*redis.Client, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", host, port),

@@ -10,9 +10,7 @@ import (
 	"github.com/square/go-jose/v3"
 )
 
-const defaultID = "18188a8d-7784-462b-bb91-5b3a540e588c"
-
-func (s *Service) GenerateData() error {
+func (s *Service) GenerateMockKeys() error {
 	id, err := s.generateUUID()
 	if err != nil {
 		return err
@@ -37,7 +35,7 @@ func (s *Service) GenerateData() error {
 func (s *Service) generateUUID() (string, error) {
 	keys, err := s.RedisService.GetSignatureKeys()
 	if err != nil || len(keys) == 0 {
-		return defaultID, nil
+		return s.KeyUUID, nil
 	}
 
 	id, err := uuid.NewRandom()

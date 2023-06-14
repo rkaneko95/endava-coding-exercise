@@ -14,7 +14,7 @@ func init() {
 		Config:        config.Config.Server,
 		Log:           config.InitLogrus(config.Config.Environment.LogLevel),
 		TokenDuration: config.Config.Token.TokenDuration,
-		SecretKeyPath: config.Config.Token.SecretKeyPath,
+		KeyUUID:       config.Config.Token.KeyUUID,
 	}
 
 	rds, err := db.RunRedis(

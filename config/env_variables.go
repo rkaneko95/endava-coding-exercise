@@ -28,7 +28,7 @@ type ServerConfig struct {
 
 type TokenConfig struct {
 	TokenDuration time.Duration
-	SecretKeyPath string
+	KeyUUID       string
 }
 
 type RedisConfig struct {
@@ -43,7 +43,7 @@ type variablesKeys struct {
 	host          string
 	port          string
 	duration      string
-	secretKeyPath string
+	keyUUID       string
 	redisHost     string
 	redisPort     string
 	redisPassword string
@@ -61,7 +61,7 @@ func init() {
 	vr.SetDefault(keys.host, "localhost")
 	vr.SetDefault(keys.port, 8080)
 	vr.SetDefault(keys.duration, "24h")
-	vr.SetDefault(keys.secretKeyPath, "./test_resources/mock_RS256.key")
+	vr.SetDefault(keys.keyUUID, "18188a8d-7784-462b-bb91-5b3a540e588c")
 	vr.SetDefault(keys.redisHost, "localhost")
 	vr.SetDefault(keys.redisPort, 6379)
 	vr.SetDefault(keys.redisPassword, "")
@@ -82,7 +82,7 @@ func init() {
 		},
 		Token: TokenConfig{
 			TokenDuration: tokenDuration,
-			SecretKeyPath: vr.GetString(keys.secretKeyPath),
+			KeyUUID:       vr.GetString(keys.keyUUID),
 		},
 		Redis: RedisConfig{
 			Host:     vr.GetString(keys.redisHost),
@@ -99,7 +99,7 @@ func setVariablesKeys() variablesKeys {
 		host:          "HOST",
 		port:          "PORT",
 		duration:      "DURATION",
-		secretKeyPath: "SECRET_KEY_PATH",
+		keyUUID:       "KEY_UUID",
 		redisHost:     "REDIS_HOST",
 		redisPort:     "REDIS_PORT",
 		redisPassword: "REDIS_PASSWORD",
