@@ -272,3 +272,6 @@ Then, it parses RSA to get the public key
 ```go
 publicKey, err := jwt.ParseRSAPublicKeyFromPEM(publicKeyPEM)
 ```
+
+## Quick Demo
+![code-demo.gif](images/code-demo.gif)
